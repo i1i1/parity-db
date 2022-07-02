@@ -507,6 +507,7 @@ impl Node {
 		stack: &mut Vec<(usize, Self)>,
 		from_end: bool,
 	) -> Result<bool> {
+		dbg!(u64::from_be_bytes(key.try_into().unwrap()));
 		let (at, i) = from.position(key)?;
 		if at {
 			stack.push((i, from));
@@ -514,12 +515,7 @@ impl Node {
 		}
 
 		if depth != 0 {
-			if from_end {
-				if let Some(child) = from.fetch_child(i + 1, values, log)? {
-					stack.push((i + 1, from));
-					return Self::seek(child, key, values, log, depth - 1, stack, from_end)
-				}
-			}
+			let i = if from_end { i + 1 } else { i };
 			if let Some(child) = from.fetch_child(i, values, log)? {
 				stack.push((i, from));
 				return Self::seek(child, key, values, log, depth - 1, stack, from_end)

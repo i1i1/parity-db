@@ -170,6 +170,8 @@ impl<'a> BTreeIterator<'a> {
 	pub fn prev(&mut self) -> Result<Option<(Vec<u8>, Vec<u8>)>> {
 		let col = self.col;
 
+		dbg!(self.last_key.as_ref().map(|i| u64::from_be_bytes((&**i).try_into().unwrap())));
+
 		// Lock log over function call (no btree struct change).
 		let commit_overlay = self.commit_overlay.read();
 		let next_commit_overlay = commit_overlay.get(col as usize).and_then(|o| {
@@ -389,6 +391,7 @@ impl BTreeIterState {
 		}
 
 		if let Some((ix, node)) = self.state.last_mut() {
+			*ix = (*ix).min(ORDER - 1);
 			while node.separator_address(*ix).is_none() && *ix > 0 {
 				*ix -= 1;
 			}
